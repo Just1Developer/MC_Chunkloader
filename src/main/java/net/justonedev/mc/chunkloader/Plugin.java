@@ -23,8 +23,8 @@ public final class Plugin extends JavaPlugin {
         allChunkloaders = FileSaver.loadAll();
         FileSaver.cleanUp();
         PluginManager pluginManager = getServer().getPluginManager();
-        pluginManager.registerEvents(new LoadEvents(this), this);
         pluginManager.registerEvents(new ChunkLoaderEvents(this), this);
+        pluginManager.registerEvents(new Crafting(this), this);
     }
 
     @Override
@@ -42,9 +42,6 @@ public final class Plugin extends JavaPlugin {
 
     public boolean containsChunkloader(Location location) {
         return allChunkloaders.contains(new Chunkloader(location));
-    }
-    public boolean containsChunkloader(Chunkloader chunkloader) {
-        return allChunkloaders.contains(chunkloader);
     }
 
     public boolean removeChunkloader(Location location) {

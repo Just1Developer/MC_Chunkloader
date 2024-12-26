@@ -1,7 +1,7 @@
 package net.justonedev.mc.chunkloader;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Lightable;
@@ -31,14 +31,13 @@ public class ChunkLoaderEvents implements Listener {
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e) {
         if (e.getBlock().getType() != Plugin.MATERIAL) return;
+        if (!Crafting.isChunkloader(e.getItemInHand())) return;
         Location loc = e.getBlock().getLocation();
         Chunk chunk = loc.getChunk();
         Chunkloader loader = new Chunkloader(loc, !chunk.isForceLoaded());
-        Bukkit.broadcastMessage("§dForceloaded: " + chunk.isForceLoaded());
         updateLightableToActive(loader);
         chunk.setForceLoaded(true);
         plugin.addChunkloader(loader);
-        Bukkit.broadcastMessage("§e" + e.getItemInHand() + " - " + loader);
     }
 
     @EventHandler
@@ -55,7 +54,6 @@ public class ChunkLoaderEvents implements Listener {
         boolean foundNew = false;
         Set<Chunkloader> remove = new HashSet<>();
 
-        Bukkit.broadcastMessage("§3Needs new: " + needsNew);
         for (Chunkloader loader2 : plugin.allChunkloaders) {
             if (loader2.getLocation().getChunk().equals(chunk)) {
                 if (loader2.getLocation().getBlock().getType() != Plugin.MATERIAL) {
@@ -67,11 +65,13 @@ public class ChunkLoaderEvents implements Listener {
                 break;
             }
         }
-        Bukkit.broadcastMessage("§33: Foundnew: " + foundNew);
 
         if (!foundNew) chunk.setForceLoaded(false);
         plugin.removeAllChunkloaders(remove);
-        Bukkit.broadcastMessage("4: " + chunk.isForceLoaded());
+        if (loc.getWorld() != null && e.getPlayer().getGameMode() != GameMode.CREATIVE) {   // Don't drop items in creative anyway
+            e.setDropItems(false);
+            loc.getWorld().dropItemNaturally(loc.add(0.5, 0.5, 0.5), Crafting.getItem());
+        }
     }
 
     @EventHandler
@@ -80,13 +80,12 @@ public class ChunkLoaderEvents implements Listener {
         if (!e.getBlock().getLocation().getChunk().isForceLoaded()) return; // Couldn't possibly be a chunk loader
         for (Chunkloader loader : plugin.allChunkloaders) {
             if (!e.getBlock().getLocation().equals(loader.getLocation())) continue;
-            Bukkit.broadcastMessage("Current Update: %d -> %d".formatted(e.getOldCurrent(), e.getNewCurrent()));
             int newPower = loader.isActive() ? 15 : 0;
-            Bukkit.broadcastMessage("Updating Power to: " + newPower);
             e.setNewCurrent(newPower);
         }
     }
 
+    @SuppressWarnings("SameParameterValue")
     private void updateLightable(Chunkloader chunkloader, boolean lit) {
         chunkloader.setActive(lit);
         updateLightable(chunkloader.getLocation().getBlock(), lit);
