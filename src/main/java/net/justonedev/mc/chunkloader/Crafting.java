@@ -64,12 +64,21 @@ public class Crafting implements Listener {
     }
 
     public static boolean isChunkloader(ItemStack item) {
-        if (item == null) return false;
+        if (item == null || CHUNKLOADER_ITEM.getItemMeta() == null) return false;
         if (item.getType() != CHUNKLOADER_ITEM.getType()) return false;
         if (item.getItemMeta() == null) return false;
         if (!item.getItemMeta().hasLore()) return false;
-        if (Objects.equals(item.getItemMeta().getLore(), Objects.requireNonNull(CHUNKLOADER_ITEM.getItemMeta()).getLore())) return false;
+        if (!areListsEqual(item.getItemMeta().getLore(), CHUNKLOADER_ITEM.getItemMeta().getLore())) return false;
         return item.getItemMeta().getCustomModelData() == CHUNKLOADER_ITEM.getItemMeta().getCustomModelData();
+    }
+
+    private static boolean areListsEqual(List<String> lore1, List<String> lore2) {
+        if (lore1 == null || lore2 == null) return false;   // must have lore in this case
+        if (lore1.size() != lore2.size()) return false;
+        for (int i = 0; i < lore1.size(); i++) {
+            if (!Objects.equals(lore1.get(i), lore2.get(i))) return false;
+        }
+        return true;
     }
 
     public static ItemStack getItem() {
