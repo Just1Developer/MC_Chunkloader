@@ -13,6 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.recipe.CraftingBookCategory;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Crafting implements Listener {
 
@@ -30,6 +31,7 @@ public class Crafting implements Listener {
         if (meta == null) return;
         meta.setDisplayName("§6Chunkloader");
         meta.setLore(List.of("§7Keeps the chunk it", "§7is in loaded forever."));
+        meta.setCustomModelData(7592742);
         CHUNKLOADER_ITEM.setItemMeta(meta);
 
         addCraftingRecipe();
@@ -62,7 +64,12 @@ public class Crafting implements Listener {
     }
 
     public static boolean isChunkloader(ItemStack item) {
-        return CHUNKLOADER_ITEM.isSimilar(item);
+        if (item == null) return false;
+        if (item.getType() != CHUNKLOADER_ITEM.getType()) return false;
+        if (item.getItemMeta() == null) return false;
+        if (!item.getItemMeta().hasLore()) return false;
+        if (Objects.equals(item.getItemMeta().getLore(), Objects.requireNonNull(CHUNKLOADER_ITEM.getItemMeta()).getLore())) return false;
+        return item.getItemMeta().getCustomModelData() == CHUNKLOADER_ITEM.getItemMeta().getCustomModelData();
     }
 
     public static ItemStack getItem() {
