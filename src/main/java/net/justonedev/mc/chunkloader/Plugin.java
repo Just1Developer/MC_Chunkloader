@@ -1,5 +1,6 @@
 package net.justonedev.mc.chunkloader;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.plugin.PluginManager;
@@ -15,21 +16,28 @@ public final class Plugin extends JavaPlugin {
     private static Plugin plugin;
 
     public Set<Chunkloader> allChunkloaders;
+    public ChunkLoading chunkLoading;
 
     @Override
     public void onEnable() {
         plugin = this;
+        chunkLoading = new ChunkLoading(this);
         // Plugin startup logic
         allChunkloaders = FileSaver.loadAll();
         FileSaver.cleanUp();
         PluginManager pluginManager = getServer().getPluginManager();
         pluginManager.registerEvents(new ChunkLoaderEvents(this), this);
         pluginManager.registerEvents(new Crafting(this), this);
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
+            allChunkloaders.forEach(l -> { if (l.isActive()) chunkLoading.startLoadingChunk(l.getLocation().getChunk()); } );
+        }, 20);
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        chunkLoading.end();
     }
 
     public static File getFolder() {

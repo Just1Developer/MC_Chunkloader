@@ -36,7 +36,7 @@ public class ChunkLoaderEvents implements Listener {
         Chunk chunk = loc.getChunk();
         Chunkloader loader = new Chunkloader(loc, !chunk.isForceLoaded());
         updateLightableToActive(loader);
-        chunk.setForceLoaded(true);
+        plugin.chunkLoading.startLoadingChunk(chunk);
         plugin.addChunkloader(loader);
     }
 
@@ -66,7 +66,7 @@ public class ChunkLoaderEvents implements Listener {
             }
         }
 
-        if (!foundNew) chunk.setForceLoaded(false);
+        if (!foundNew) plugin.chunkLoading.stopLoadingChunk(chunk);
         plugin.removeAllChunkloaders(remove);
         if (loc.getWorld() != null && e.getPlayer().getGameMode() != GameMode.CREATIVE) {   // Don't drop items in creative anyway
             e.setDropItems(false);
