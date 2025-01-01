@@ -137,7 +137,7 @@ public class VirtualPlayers {
         return name.length() <= 16 ? name : name.substring(0, 16);
     }
 
-    public static boolean setPosition(
+    public static void setPosition(
             EntityPlayer nmsPlayer,
             WorldServer nmsWorld,
             Location location
@@ -147,7 +147,7 @@ public class VirtualPlayers {
 
         // false => we don’t do the internal “d(this)” logic
         // TeleportCause.PLUGIN => up to you
-        return nmsPlayer.teleportTo(
+        nmsPlayer.teleportTo(
                 nmsWorld,
                 location.getX(),
                 location.getY(),
@@ -166,17 +166,5 @@ public class VirtualPlayers {
             if (virtualPlayers.contains(realPlayer.getName())) continue;
             realPlayer.hidePlayer(plugin, bukkitPlayer);
         }
-    }
-
-    private static void makeInvisible(EntityPlayer nmsPlayer) {/*
-        // For Spigot obf, the entity flags might be in DataWatcher
-        DataWatcher dw = nmsPlayer.au();
-        // Typically there's a Byte (0) field representing entity flags.
-        // Check the actual index in your current version.
-
-        // If the flags are at index 0:
-        byte flags = dw.getByte(0);
-        // 0x20 for invisibility:
-        dw.set(0, (byte) (flags | 0x20));*/
     }
 }
