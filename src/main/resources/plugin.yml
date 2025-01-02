@@ -2,3 +2,5 @@ name: Chunkloader
 version: '1.0-SNAPSHOT'
 main: net.justonedev.mc.chunkloader.Plugin
 api-version: '1.21'
+author: JustOneDeveloper
+depend: [ProtocolLib]

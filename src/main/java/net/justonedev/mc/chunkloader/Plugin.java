@@ -1,5 +1,11 @@
 package net.justonedev.mc.chunkloader;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketAdapter;
+import com.comphenix.protocol.events.PacketEvent;
+import com.comphenix.protocol.wrappers.WrappedServerPing;
 import com.mojang.authlib.GameProfile;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -15,6 +21,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_21_R3.CraftServer;
 import org.bukkit.craftbukkit.v1_21_R3.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -30,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class Plugin extends JavaPlugin implements Listener {
 
@@ -59,7 +67,7 @@ public final class Plugin extends JavaPlugin implements Listener {
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
             allChunkloaders.forEach(l -> { if (l.isActive()) chunkLoading.startLoadingChunk(l.getLocation().getChunk()); } );
         }, 5);
-        getServer().getScheduler().runTaskLater(this, this::injectNetty, 40L);
+        getServer().getScheduler().runTaskLater(this, this::injectNettyProtocolLib, 2);
 
         VirtualPlayers.printDeobfuscated(this);
     }
@@ -108,6 +116,40 @@ public final class Plugin extends JavaPlugin implements Listener {
         if (removed) FileSaver.saveAll(allChunkloaders);
     }
 
+    public void injectNettyProtocolLib() {
+        // Get the ProtocolManager instance
+        ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
+
+        // Add a packet listener for server info packets
+        protocolManager.addPacketListener(new PacketAdapter(this, PacketType.Status.Server.PONG) {
+            @Override
+            public void onPacketSending(PacketEvent event) {
+                try {
+                    // Intercept and modify the server ping packet
+                    WrappedServerPing ping = event.getPacket().getServerPings().read(0);
+                    if (ping == null) {
+                        Bukkit.getLogger().severe("WrappedServerPing is null!");
+                        return;
+                    }
+
+                    Collection<Player> realPlayers = Bukkit.getOnlinePlayers().stream()
+                            .filter(player -> !virtualPlayers.contains((CraftPlayer) player))
+                            .collect(Collectors.toList());
+
+                    // Modify the visible player count
+                    ping.setPlayersOnline(realPlayers.size() + 5);
+
+                    // Modify the hover player list
+                    ping.setBukkitPlayers(realPlayers);
+
+                } catch (Exception e) {
+                    Bukkit.getLogger().severe("Failed to access numPlayers Field:" + e.getMessage());
+                    Bukkit.getLogger().severe("%s | %s".formatted(e.getMessage(), e.getClass()));
+                }
+            }
+        });
+    }
+
     public void injectNetty() {
         MinecraftServer nmsServer = ((CraftServer) Bukkit.getServer()).getServer();
         ServerConnection serverConnection = nmsServer.ah();
@@ -123,7 +165,7 @@ public final class Plugin extends JavaPlugin implements Listener {
             for (ChannelFuture future : channelFutures) {
                 Channel channel = future.channel();
                 if (channel.pipeline().get("fakePingHider") == null) {
-                    channel.pipeline().addFirst("fakePingHider", new FakePingHiderHandler());
+                    channel.pipeline().addFirst( "fakePingHider", new FakePingHiderHandler());
                 }
             }
         } catch (Exception e) {

@@ -114,7 +114,9 @@ public class VirtualPlayers {
 
         // 7) Add to server’s player list
         virtualPlayerNames.add(name);
-        craftServer.getHandle().a(networkManager, nmsPlayer, cookie);
+        try {
+            craftServer.getHandle().a(networkManager, nmsPlayer, cookie);
+        } catch (Exception ignored) {}  // this only fails with ProtocolLib because of an Encoder issue
         virtualPlayers.add(nmsPlayer.getBukkitEntity());
         // SPECTATOR *would* solve our issues, but that doesn't trigger ticking...
         nmsPlayer.getBukkitEntity().setGameMode(GameMode.CREATIVE); // Creative so mobs don't target it. I hope this is not exploitable
