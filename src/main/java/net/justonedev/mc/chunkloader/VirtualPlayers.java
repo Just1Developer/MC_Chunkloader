@@ -43,34 +43,6 @@ public class VirtualPlayers {
             ParticleStatus.c
     );
 
-    /*
-        [20:15:02 INFO]: EnumChatVisibility.a = FULL
-        [20:15:02 INFO]: EnumChatVisibility.b = SYSTEM
-        [20:15:02 INFO]: EnumChatVisibility.c = HIDDEN
-        [20:15:02 INFO]: EnumMainHand.a = LEFT
-        [20:15:02 INFO]: EnumMainHand.b = RIGHT
-        [20:15:02 INFO]: ParticleStatus.a = ALL
-        [20:15:02 INFO]: ParticleStatus.b = DECREASED
-        [20:15:02 INFO]: ParticleStatus.c = MINIMAL
-        [20:15:02 INFO]: EnumProtocolDirection.a = SERVERBOUND
-        [20:15:02 INFO]: EnumProtocolDirection.b = CLIENTBOUND
-    * */
-
-    public static void printDeobfuscated(Plugin plugin) {
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            Bukkit.broadcastMessage("§eEnumChatVisibility.a = " + EnumChatVisibility.a.toString());
-            Bukkit.broadcastMessage("§eEnumChatVisibility.b = " + EnumChatVisibility.b.toString());
-            Bukkit.broadcastMessage("§eEnumChatVisibility.c = " + EnumChatVisibility.c.toString());
-            Bukkit.broadcastMessage("§eEnumMainHand.a = " + EnumMainHand.a.toString());
-            Bukkit.broadcastMessage("§eEnumMainHand.b = " + EnumMainHand.b.toString());
-            Bukkit.broadcastMessage("§dParticleStatus.a = " + ParticleStatus.a.toString());
-            Bukkit.broadcastMessage("§dParticleStatus.b = " + ParticleStatus.b.toString());
-            Bukkit.broadcastMessage("§dParticleStatus.c = " + ParticleStatus.c.toString());
-            Bukkit.broadcastMessage("§cEnumProtocolDirection.a = " + EnumProtocolDirection.a.toString());
-            Bukkit.broadcastMessage("§cEnumProtocolDirection.b = " + EnumProtocolDirection.b.toString());
-        }, 5);
-    }
-
     /**
      * Spawns an invisible "virtual" NMS player in the given location.
      * This keeps the chunk loaded but is not visible to other players.
