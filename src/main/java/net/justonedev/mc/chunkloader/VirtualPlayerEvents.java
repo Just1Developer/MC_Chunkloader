@@ -39,7 +39,6 @@ public class VirtualPlayerEvents implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
-        Bukkit.broadcastMessage("Virtual Player?" + e.getPlayer().getName() + ": " + plugin.virtualPlayerNames.contains(e.getPlayer().getName()));
         if (plugin.virtualPlayerNames.contains(e.getPlayer().getName())) {
             e.setQuitMessage(null);
             plugin.virtualPlayerNames.remove(e.getPlayer().getName());

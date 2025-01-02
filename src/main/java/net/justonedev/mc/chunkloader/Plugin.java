@@ -7,9 +7,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_21_R3.entity.CraftPlayer;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -27,13 +25,12 @@ public final class Plugin extends JavaPlugin implements Listener {
 
     private Set<ChunkCoordIntPair> loadedChunks;
     public Set<Chunkloader> allChunkloaders;
-    public ChunkLoading chunkLoading;
 
     @Override
     public void onEnable() {
         plugin = this;
-        chunkLoading = new ChunkLoading(this);
         loadedChunks = new HashSet<>();
+        allChunkloaders = new HashSet<>();
         // Plugin startup logic
         FileSaver.cleanUp();
         PluginManager pluginManager = getServer().getPluginManager();
@@ -41,15 +38,7 @@ public final class Plugin extends JavaPlugin implements Listener {
         pluginManager.registerEvents(new ChunkLoaderEvents(this), this);
         pluginManager.registerEvents(new Crafting(this), this);
 
-        // For Debugging:
-        pluginManager.registerEvents(this, this);
-
-        /*
-        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
-            allChunkloaders.forEach(l -> { if (l.isActive()) chunkLoading.startLoadingChunk(l.getLocation().getChunk()); } );
-        }, 5);
-         */
-        Bukkit.getScheduler().runTaskLater(this, this::loadAllChunkloaders, 10L);
+        Bukkit.getScheduler().runTaskLater(this, this::loadAllChunkloaders, 5);
     }
 
     private void loadAllChunkloaders() {
@@ -59,17 +48,9 @@ public final class Plugin extends JavaPlugin implements Listener {
     public final Set<CraftPlayer> virtualPlayers = new HashSet<>();
     public final Set<String> virtualPlayerNames = new HashSet<>();
 
-    @EventHandler
-    public void onJoin(PlayerJoinEvent e) {
-        if (!e.getPlayer().getName().equals("Just1Developer")) return;
-        var spawnedVirtualPlayer = VirtualPlayers.spawnVirtualPlayer(this, virtualPlayers, virtualPlayerNames, e.getPlayer().getLocation());
-        Bukkit.broadcastMessage("entity: " + spawnedVirtualPlayer);
-    }
-
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        chunkLoading.end();
         for (CraftPlayer virtualPlayer : virtualPlayers) {
             virtualPlayer.kickPlayer("Server Restart");
         }
@@ -91,7 +72,10 @@ public final class Plugin extends JavaPlugin implements Listener {
     }
     public void addChunkloader(Chunkloader chunkloader) {
         boolean added = allChunkloaders.add(chunkloader);
-        if (added) FileSaver.saveAll(allChunkloaders);
+        if (added) {
+            FileSaver.saveAll(allChunkloaders);
+            setChunkLoaded(chunkloader.getLocation().getChunk(), true);
+        }
     }
 
     public boolean containsChunkloader(Location location) {
@@ -114,12 +98,10 @@ public final class Plugin extends JavaPlugin implements Listener {
         // Cap:
         int cap = getServer().getMaxPlayers() - 3;
         if (getServer().isWhitelistEnforced()) cap -= getServer().getWhitelistedPlayers().size();
-        Bukkit.getLogger().severe("cap: " + cap + " | " + (getServer().getOnlinePlayers().size() >= cap) + " || " + getServer().getOnlinePlayers().size());
         if (getServer().getOnlinePlayers().size() >= cap) return null;
         return VirtualPlayers.spawnVirtualPlayer(this, virtualPlayers, virtualPlayerNames, location);
     }
     public void despawnVirtualPlayer(CraftPlayer player) {
-        Bukkit.broadcastMessage("Kicking entity: " + player);
         virtualPlayers.remove(player);
         player.kickPlayer("Removed.");
         virtualPlayerNames.remove(player.getName());

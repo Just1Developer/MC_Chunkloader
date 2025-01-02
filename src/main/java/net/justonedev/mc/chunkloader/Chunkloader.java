@@ -21,6 +21,7 @@ public class Chunkloader {
     public Chunkloader(Plugin plugin, Location location) {
         this.plugin = plugin;
         this.location = location;
+        plugin.addChunkloader(this);
     }
 
     public Chunkloader(Plugin plugin, Location location, boolean active) {
@@ -38,27 +39,20 @@ public class Chunkloader {
 
     public boolean setActive(boolean active) {
         this.active = active;
-        Bukkit.broadcastMessage("1 " + active);
         if (active) {
-            Bukkit.broadcastMessage("2");
             EntityPlayer entityPlayer = plugin.spawnVirtualPlayer(location);
-            Bukkit.broadcastMessage("3" + entityPlayer);
             if (entityPlayer == null) {
-                Bukkit.broadcastMessage("4");
                 this.active = false;
                 player = null;
                 Bukkit.getLogger().warning("Chunkloader failed to activate at location " + location);
                 return false;
             }
-            Bukkit.broadcastMessage("5");
             player = entityPlayer.getBukkitEntity();
             plugin.setChunkLoaded(location.getChunk(), true);
         } else {
-            Bukkit.broadcastMessage("6");
             despawn();
             player = null;
         }
-        Bukkit.broadcastMessage("8");
         updateBlock();
         return true;
     }
@@ -71,14 +65,13 @@ public class Chunkloader {
 
     public void updateBlock() {
         Block block = location.getBlock();
-        if (block instanceof Lightable) {
-            Bukkit.getLogger().warning("Failed to update block at " + location);
-            plugin.removeChunkloader(this);
+        if (block.getBlockData() instanceof Lightable lightable) {
+            lightable.setLit(active);
+            block.setBlockData(lightable, false);   // false to avoid physics updates: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Block.html#setBlockData(org.bukkit.block.data.BlockData,boolean)
             return;
         }
-        Lightable lightable = (Lightable) block.getBlockData();
-        lightable.setLit(active);
-        block.setBlockData(lightable, false);   // false to avoid physics updates: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Block.html#setBlockData(org.bukkit.block.data.BlockData,boolean)
+        Bukkit.getLogger().warning("Failed to update block at " + location);
+        plugin.removeChunkloader(this);
     }
 
     @Override

@@ -35,8 +35,7 @@ public class ChunkLoaderEvents implements Listener {
         Location loc = e.getBlock().getLocation();
         Chunk chunk = loc.getChunk();
         boolean loadedChanged = plugin.setChunkLoaded(chunk, true);
-        Chunkloader loader = new Chunkloader(plugin, loc, loadedChanged);
-        plugin.addChunkloader(loader);
+        new Chunkloader(plugin, loc, loadedChanged);
     }
 
     @EventHandler
@@ -83,7 +82,7 @@ public class ChunkLoaderEvents implements Listener {
     @EventHandler
     public void onLightChange(BlockRedstoneEvent e) {
         if (e.getBlock().getType() != Plugin.MATERIAL) return;
-        if (!e.getBlock().getLocation().getChunk().isForceLoaded()) return; // Couldn't possibly be a chunk loader
+        if (!plugin.isChunkLoaded(e.getBlock().getChunk())) return; // Couldn't possibly be a chunk loader
         for (Chunkloader loader : plugin.allChunkloaders) {
             if (!e.getBlock().getLocation().equals(loader.getLocation())) continue;
             int newPower = loader.isActive() ? 15 : 0;
