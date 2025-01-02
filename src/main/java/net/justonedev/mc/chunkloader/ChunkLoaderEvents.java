@@ -36,6 +36,7 @@ public class ChunkLoaderEvents implements Listener {
         Chunk chunk = loc.getChunk();
         boolean loadedChanged = plugin.setChunkLoaded(chunk, true);
         new Chunkloader(plugin, loc, loadedChanged);
+        plugin.saveAllChunkloadersActivity();
     }
 
     @EventHandler
@@ -77,6 +78,7 @@ public class ChunkLoaderEvents implements Listener {
             e.setDropItems(false);
             loc.getWorld().dropItemNaturally(loc.add(0.5, 0.5, 0.5), Crafting.getItem());
         }
+        plugin.saveAllChunkloadersActivity();
     }
 
     @EventHandler

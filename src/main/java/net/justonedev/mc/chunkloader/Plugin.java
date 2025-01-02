@@ -56,6 +56,10 @@ public final class Plugin extends JavaPlugin implements Listener {
         }
     }
 
+    public void saveAllChunkloadersActivity() {
+        FileSaver.saveActivityOnly(this.allChunkloaders);
+    }
+
     public boolean setChunkLoaded(Chunk chunk, boolean isLoaded) {
         ChunkCoordIntPair coord = new ChunkCoordIntPair(chunk.getX(), chunk.getZ());
         if (isLoaded) return loadedChunks.add(coord);
@@ -79,11 +83,11 @@ public final class Plugin extends JavaPlugin implements Listener {
     }
 
     public boolean containsChunkloader(Location location) {
-        return allChunkloaders.contains(new Chunkloader(this, location));
+        return allChunkloaders.contains(new Chunkloader(location));
     }
 
     public boolean isChunkloader(Location location) {
-        return allChunkloaders.contains(new Chunkloader(this, location));
+        return allChunkloaders.contains(new Chunkloader(location));
     }
     public void removeChunkloader(Chunkloader chunkloader) {
         boolean removed = allChunkloaders.remove(chunkloader);

@@ -18,6 +18,14 @@ public class Chunkloader {
     @Nullable
     private CraftPlayer player;
 
+    /**
+     * For comparison use only! plugin will be null, so functionality will not be provided.
+     * @param location the location.
+     */
+    public Chunkloader(Location location) {
+        this.plugin = null;
+        this.location = location;
+    }
     public Chunkloader(Plugin plugin, Location location) {
         this.plugin = plugin;
         this.location = location;
