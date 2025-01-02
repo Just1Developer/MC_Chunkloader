@@ -28,12 +28,12 @@ public class FileSaver {
         saveToFile(cfg);
     }
 
-    public static Set<Chunkloader> loadAll() {
+    public static Set<Chunkloader> loadAll(Plugin plugin) {
         FileConfiguration cfg = getCfg();
         Set<Chunkloader> allChunkloaders = new HashSet<>();
         int loaders = cfg.getInt("chunkloaders");
         for (int i = 0; i < loaders; i++) {
-            var loader = load(i, cfg);
+            var loader = load(i, cfg, plugin);
             if (loader != null) allChunkloaders.add(loader);
         }
         return allChunkloaders;
@@ -54,7 +54,7 @@ public class FileSaver {
         return YamlConfiguration.loadConfiguration(new File(Plugin.getFolder(), FILENAME));
     }
 
-    private static Chunkloader load(int index, FileConfiguration cfg) {
+    private static Chunkloader load(int index, FileConfiguration cfg, Plugin plugin) {
         String worldname = cfg.getString("loader.%d.world".formatted(index));
         if (worldname == null) return null;
         World world = Bukkit.getWorld(worldname);
@@ -64,7 +64,7 @@ public class FileSaver {
                 z = cfg.getInt("loader.%d.z".formatted(index));
         Location loc = new Location(world, x, y, z);
         boolean active = cfg.getBoolean("loader.%d.active".formatted(index));
-        return new Chunkloader(loc, active);
+        return new Chunkloader(plugin, loc, active);
     }
 
     private static void save(Chunkloader chunkloader, int index, FileConfiguration cfg) {

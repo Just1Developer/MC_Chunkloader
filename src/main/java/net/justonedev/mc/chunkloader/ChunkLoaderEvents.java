@@ -34,9 +34,8 @@ public class ChunkLoaderEvents implements Listener {
         if (!Crafting.isChunkloader(e.getItemInHand())) return;
         Location loc = e.getBlock().getLocation();
         Chunk chunk = loc.getChunk();
-        Chunkloader loader = new Chunkloader(loc, !chunk.isForceLoaded());
-        updateLightableToActive(loader);
-        plugin.chunkLoading.startLoadingChunk(chunk);
+        boolean loadedChanged = plugin.setChunkLoaded(chunk, true);
+        Chunkloader loader = new Chunkloader(plugin, loc, loadedChanged);
         plugin.addChunkloader(loader);
     }
 
@@ -44,10 +43,9 @@ public class ChunkLoaderEvents implements Listener {
     public void onBlockBreak(BlockBreakEvent e) {
         if (e.getBlock().getType() != Plugin.MATERIAL) return;
         Location loc = e.getBlock().getLocation();
-        if (!plugin.removeChunkloader(loc)) return;
+        if (!plugin.isChunkloader(loc)) return;
         // Check if there are no other chunkloaders in the chunk
         Chunk chunk = loc.getChunk();
-        plugin.removeChunkloader(loc);
 
         // Select new
         boolean needsNew = ((Lightable) e.getBlock().getBlockData()).isLit();
@@ -56,17 +54,25 @@ public class ChunkLoaderEvents implements Listener {
 
         for (Chunkloader loader2 : plugin.allChunkloaders) {
             if (loader2.getLocation().getChunk().equals(chunk)) {
-                if (loader2.getLocation().getBlock().getType() != Plugin.MATERIAL) {
+                if (loader2.getLocation().getBlock().getType() != Plugin.MATERIAL || loader2.getLocation().equals(loc)) {
+                    loader2.despawn();
                     remove.add(loader2);
                     continue;
                 }
-                if (needsNew) updateLightable(loader2, true);
+                if (needsNew) {
+                    boolean success = loader2.setActive(true);
+                    if (!success) {
+                        e.getPlayer().sendMessage("§eCould not activate Chunkloader: Limit reached.");
+                    }
+                }
                 foundNew = true;
                 break;
             }
         }
 
-        if (!foundNew) plugin.chunkLoading.stopLoadingChunk(chunk);
+        if (!foundNew) {
+            plugin.setChunkLoaded(chunk, false);
+        }
         plugin.removeAllChunkloaders(remove);
         if (loc.getWorld() != null && e.getPlayer().getGameMode() != GameMode.CREATIVE) {   // Don't drop items in creative anyway
             e.setDropItems(false);
@@ -83,22 +89,6 @@ public class ChunkLoaderEvents implements Listener {
             int newPower = loader.isActive() ? 15 : 0;
             e.setNewCurrent(newPower);
         }
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private void updateLightable(Chunkloader chunkloader, boolean lit) {
-        chunkloader.setActive(lit);
-        updateLightable(chunkloader.getLocation().getBlock(), lit);
-    }
-
-    private void updateLightableToActive(Chunkloader chunkloader) {
-        updateLightable(chunkloader.getLocation().getBlock(), chunkloader.isActive());
-    }
-
-    private void updateLightable(Block block, boolean lit) {
-        Lightable lightable = (Lightable) block.getBlockData();
-        lightable.setLit(lit);
-        block.setBlockData(lightable, false);   // false to avoid physics updates: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/block/Block.html#setBlockData(org.bukkit.block.data.BlockData,boolean)
     }
 
     // Protection

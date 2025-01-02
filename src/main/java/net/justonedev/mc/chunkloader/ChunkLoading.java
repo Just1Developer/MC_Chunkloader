@@ -34,7 +34,7 @@ import java.util.UUID;
 public class ChunkLoading {
 
     private final Plugin plugin;
-    public final Set<Chunk> loadedChunks;
+    private final Set<Chunk> loadedChunks;
 
     private int scheduler;
 
@@ -130,7 +130,9 @@ public class ChunkLoading {
 
     public void startLoadingChunk(Chunk chunk) {
         if (!loadedChunks.add(chunk)) return;
-        //chunk.setForceLoaded(true);
+        chunk.setForceLoaded(true);
+
+        /*
         //chunk.addPluginChunkTicket(plugin);
         Bukkit.broadcastMessage("§eAdded ticket for chunk %d, %d".formatted(chunk.getX(), chunk.getZ()));
         if (loadedChunks.size() == 1) startScheduler();
@@ -149,14 +151,15 @@ public class ChunkLoading {
         //Location middle = chunk.getBlock(8, chunk.getWorld().getHighestBlockYAt(chunk.getX() * 16 + 8, chunk.getZ() * 16 + 8), 8).getLocation();
         // Spawn a fake player in the chunk
         //spawnFakePlayer3(middle, "ChunkLoader_" + chunk.getX() + "_" + chunk.getZ());
+         */
     }
 
     public void stopLoadingChunk(Chunk chunk) {
         if (!loadedChunks.remove(chunk)) return;
         chunk.setForceLoaded(false);
-        chunk.removePluginChunkTicket(plugin);
+        //chunk.removePluginChunkTicket(plugin);
         //Bukkit.broadcastMessage("§cRemoved ticket for chunk %d, %d".formatted(chunk.getX(), chunk.getZ()));
-        if (loadedChunks.isEmpty()) stopScheduler();
+        //if (loadedChunks.isEmpty()) stopScheduler();
     }
 
     private void addTicket(Chunk chunk) {
